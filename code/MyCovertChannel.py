@@ -7,17 +7,22 @@ class MyCovertChannel(CovertChannelBase):
     - You are not allowed to change the file name and class name.
     - You can edit the class in any way you want (e.g. adding helper functions); however, there must be a "send" and a "receive" function, the covert channel will be triggered by calling these functions.
     """
-    def _init_(self):
+    def __init__(self):
         """
-        - You can edit _init_.
+        - You can edit __init__.
         """
+        super().__init__()
         self.message = ""
         self.flag = False
         self.packet_count = 0
+        self.bits=[]
+        self.b_num = 0
+        self.start_flag = True
+        self.wait_time = 0.15
     
 
     def wait(self):
-        time.sleep(0.5)
+        time.sleep(self.wait_time )
             
     def send(self, log_file_name, parameter1, parameter2):
         """
@@ -41,15 +46,22 @@ class MyCovertChannel(CovertChannelBase):
                 send(packet1) 
                 send(packet2) #send kontrol et
                 self.wait()
+                
             else:
                 #send_three_packets
                 packet1 = IP(dst = rec_IP) / ICMP() 
                 packet2 = IP(dst = rec_IP) / ICMP() 
                 packet3 = IP(dst = rec_IP) / ICMP() 
+                packet4 = IP(dst = rec_IP) / ICMP()
                 send(packet1)
                 send(packet2)
                 send(packet3)
+                send(packet4)
                 self.wait()
+
+        last_packet = IP(dst = rec_IP) / ICMP()
+        send(last_packet)
+                
 
         
         
@@ -63,49 +75,60 @@ class MyCovertChannel(CovertChannelBase):
         """
         # biraz da error katarak idle time belirlemece slay
 
-
         def receivePacket(packet):
 
-            print("packet received")
+            if self.start_flag:
+                self.start_time = time.time()
+                self.start_flag = False
 
-            in_time_interval = True
-
-            if in_time_interval and self.packet_count < 4:
-                if packet and packet.haslayer(ICMP) : # and packet[ICMP].type == 8 do we need echo messages
-                    self.packet_count+=1
-            else:
-                if self.packet_count < 4:
-                    print("if")
-                    bits.append(0)
-                    b_num+=1
-                    self.packet_count = 0
-                else:
-                    print("else")
-                    bits.append(1)
-                    b_num+=1
-                    self.packet_count = 0
             
-            print("bits :", bits)
 
-            if b_num == 8:
-                self.message += convert_to_char(bits)
-                b_num = 0
-                print("bits 8----:", bits)
-                bits = []
+            in_time_interval = (time.time() - self.start_time ) > self.wait_time 
+
+            #if in_time_interval and self.packet_count < 5:
+            if packet and packet.haslayer(ICMP) and packet[ICMP].type == 8: # and packet[ICMP].type == 8 do we need echo messages
+                #print("packet received",(time.time() - self.start_time ))
+                self.packet_count+=1
+
+            if in_time_interval:
+                #print("packet count", self.packet_count)
+                if self.packet_count < 3:
+                    self.bits.append(1)
+                    self.b_num+=1
+                    self.packet_count = 0
+                    self.start_flag = True
+                else:
+                    self.bits.append(0)
+                    self.b_num+=1
+                    self.packet_count = 0
+                    self.start_flag = True
+            
+            
+            
+
+            if self.b_num == 8:
+                #print("bits :", ''.join(map(str, self.bits)))
+                self.message += self.convert_eight_bits_to_character(''.join(map(str, self.bits)))
+                self.b_num = 0
+                self.bits = []
+                #print(self.message)
+
+                if self.message[-1] == '.': 
+                    #print("bitti------------------------------------")
+                    #print("message", self.message) 
+                    self.log_message(message = self.message, log_file_name=log_file_name)
+                    self.flag = True 
+
+
         
     
         def getFlag(packet):
-            print("flag " , self.flag)
             return self.flag
 
+        
 
         sniff(filter="icmp", prn = receivePacket, stop_filter = getFlag)  # should i put in init func???
+
               
-        if self.message and self.message[-1] == '.':
-	        self.flag = True 
-
-
-        if self.flag:
-            self.log_message(self.message, log_file_name)
-            self.message = ""
-            self.flag = False
+	      
+        
