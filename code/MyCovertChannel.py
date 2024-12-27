@@ -36,7 +36,7 @@ class MyCovertChannel(CovertChannelBase):
         #code for performance test
         rec_IP = "172.18.0.3"
         starting_time = time.time()
-        binary_message = self.generate_random_binary_message_with_logging(log_file_name, min_length=16 ,max_length=16)
+        binary_message = self.generate_random_binary_message_with_logging(log_file_name, min_length=50 ,max_length=100)
         for i in range(len(binary_message)):
             if binary_message[i] ==  '1':
                 #send_two_packets change packet numbers give bigger to test the code, after ur sure u have no error proceed to smaller packet numbers
