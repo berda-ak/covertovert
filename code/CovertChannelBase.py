@@ -1,136 +1,78 @@
-from CovertChannelBase import CovertChannelBase
-from scapy.all import sniff,IP,ICMP,send
+import string
 import time
+import random
+from scapy.all import send, sendp, ARP, LLC
 
-class MyCovertChannel(CovertChannelBase):
+# You are not allowed to change CovertChannelBase class, please make your implementation in the MyCovertChannel class.
+class CovertChannelBase:
     """
-    - You are not allowed to change the file name and class name.
-    - You can edit the class in any way you want (e.g. adding helper functions); however, there must be a "send" and a "receive" function, the covert channel will be triggered by calling these functions.
+    - You must inherit the CovertChannelBase class in your implementation.
     """
     def __init__(self):
         """
-        - You can edit __init__.
+        - Empty init
         """
-        super().__init__()
-        self.message = ""
-        self.flag = False
-        self.packet_count = 0
-        self.bits=[]
-        self.b_num = 0
-        self.start_flag = True
-        self.wait_time = 0.2
-    
-
-    def wait(self):
-        time.sleep(self.wait_time )
-            
-    def send(self, log_file_name, first_burst_num, second_burst_num):
+        pass
+    def send(self, packet, interface="eth0"):
         """
-        - In this function, you expected to create a random message (using function/s in CovertChannelBase), and send it to the receiver container. Entire sending operations should be handled in this function.
-        - After the implementation, please rewrite this comment part to explain your code basically.
+        - You must send each packet by using this function.
+        - Call this function with the packet and sender's interface (Default interface is "eth0" and you do not have to set unless there is a specific purpose.)
         """
-
-        # 1 is 2 packets, 
-        # 0 is 3 packets
-        # waiting time ?
-        #code for performance test
-        rec_IP = "172.18.0.3"
-        starting_time = time.time()
-        binary_message = self.generate_random_binary_message_with_logging(log_file_name, min_length=16 ,max_length=16)
-        for i in range(len(binary_message)):
-            if binary_message[i] ==  '1':
-                #send_two_packets change packet numbers give bigger to test the code, after ur sure u have no error proceed to smaller packet numbers
-                for j in range(first_burst_num):
-                    packet1 = IP(dst = rec_IP) / ICMP() 
-                    super().send(packet1) 
-                self.wait()
-                
-            else:
-                #send_three_packets
-                for j in range(second_burst_num):
-                    packet1 = IP(dst = rec_IP) / ICMP() 
-                    super().send(packet1) 
-                self.wait()
-
-        last_packet = IP(dst = rec_IP) / ICMP()
-        super().send(last_packet)
-
-        performance = 128/(time.time() - starting_time)
-        print("Covert Channel Performance: ", performance)
-
-    def receive(self, first_burst_num, second_burst_num, parameter3, log_file_name):
+        if packet.haslayer(ARP) or packet.haslayer(LLC):
+            sendp(packet, iface=interface, verbose=False)
+        else:
+            send(packet, iface=interface, verbose=False)
+    def log_message(self, message, log_file_name):
         """
-        - In this function, you are expected to receive and decode the transferred message. Because there are many types of covert channels, the receiver implementation depends on the chosen covert channel type, and you may not need to use the functions in CovertChannelBase.
-        - After the implementation, please rewrite this comment part to explain your code basically.
+        - You can use this function to log the received message and it is not a must, you can write your own.
         """
-        # biraz da error katarak idle time belirlemece slay
-
-        def receivePacket(packet):
-
-            if self.start_flag:
-                self.start_time = time.time()
-                self.start_flag = False
-
-            
-
-            in_time_interval = (time.time() - self.start_time ) > self.wait_time 
-
-            #if in_time_interval and self.packet_count < 5:
-            if packet and packet.haslayer(ICMP) and packet[ICMP].type == 8: # and packet[ICMP].type == 8 do we need echo messages
-                #print("packet received",(time.time() - self.start_time ))
-                self.packet_count+=1
-
-            if(first_burst_num<second_burst_num):
-                if in_time_interval:
-                #print("packet count", self.packet_count)
-                    if self.packet_count < (first_burst_num+1):
-                        self.bits.append(1)
-                        self.b_num+=1
-                        self.packet_count = 0
-                        self.start_flag = True
-                    else:
-                        self.bits.append(0)
-                        self.b_num+=1
-                        self.packet_count = 0
-                        self.start_flag = True
-            else:
-                if in_time_interval:
-                    #print("packet count", self.packet_count)
-                    if self.packet_count < (second_burst_num+1):
-                        self.bits.append(1)
-                        self.b_num+=1
-                        self.packet_count = 0
-                        self.start_flag = True
-                    else:
-                        self.bits.append(0)
-                        self.b_num+=1
-                        self.packet_count = 0
-                        self.start_flag = True
-            
-            
-            
-
-            if self.b_num == 8:
-                #print("bits :", ''.join(map(str, self.bits)))
-                self.message += self.convert_eight_bits_to_character(''.join(map(str, self.bits)))
-                self.b_num = 0
-                self.bits = []
-                #print(self.message)
-
-                if self.message[-1] == '.': 
-                    #print("bitti------------------------------------")
-                    #print("message", self.message) 
-                    self.log_message(message = self.message, log_file_name=log_file_name)
-                    self.flag = True 
-
-
-        
-    
-        def getFlag(packet):
-            return self.flag
-
-        
-
-        sniff(filter="icmp", prn = receivePacket, stop_filter = getFlag)  # should i put in init func???
-
-              
+        with open(log_file_name, "w") as my_file:
+            my_file.write(message)
+    def convert_string_message_to_binary(self, message):
+        """
+        - Converts the incoming string value to binary format.
+        - You do not have to use it directly; instead, you can use generate_random_binary_message or generate_random_binary_message_with_logging functions.
+        """
+        binary_message_to_transfer = ''.join(format(i, '08b') for i in bytearray(message, encoding='utf-8'))
+        return binary_message_to_transfer
+    def generate_random_message(self, min_length=5, max_length=10):
+        """
+        - You can use this function if you want to create a random string, e.g. for the payload of the packet.
+        """
+        assert 0 < min_length, "min_length must be bigger than 0"
+        assert min_length <= max_length, "min_length must be smaller than or equal to the max_length"
+        letters_digits = string.ascii_letters + string.digits
+        punctuation = ',?!'
+        all_chars = " " * 50 + letters_digits * 5 + punctuation
+        length = random.randint(min_length-1, max_length-1)
+        random_string = ''.join(random.choice(all_chars) for _ in range(length))
+        random_string += "."
+        return random_string
+    def generate_random_binary_message(self, min_length=50, max_length=100):
+        """
+        - It generates a random string whose length is between the min_length and max_length, and converts it to binary format.
+        - "." is the stopping character for the covert channel communication, so that it adds "." at the of the generated string without ruining the length restrictions.
+        - You must use this function to generate the message in binary format that will be transferred with covert channel communication.
+        """
+        random_message = self.generate_random_message(min_length=min_length, max_length=max_length)
+        random_binary_message = self.convert_string_message_to_binary(message=random_message)
+        return random_binary_message
+    def generate_random_binary_message_with_logging(self, log_file_name, min_length=50, max_length=100):
+        """
+        - Same as generate_random_binary_message() function with logging option.
+        """
+        random_message = self.generate_random_message(min_length=min_length, max_length=max_length)
+        random_binary_message = self.convert_string_message_to_binary(message=random_message)
+        self.log_message(message=random_message, log_file_name=log_file_name)
+        return random_binary_message
+    def sleep_random_time_ms(self, start=1, end=10):
+        """
+        - For the covert timing channels, you can use this function if you want to wait random time in miliseconds between start and end.
+        """
+        time.sleep(random.uniform(start, end) / 1000)
+    def convert_eight_bits_to_character(self, eight_bits):
+        """
+        - It can be used to convert the received eight bits to a character in the receiving operation.
+        - Takes eight bits as a string, converts and returns.
+        """
+        return chr(int(eight_bits, 2))
