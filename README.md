@@ -1,39 +1,25 @@
 # COVERTOVERT
 Open source implementation of "network" covert channels.
 
-## Installation
+## What is a Covert Storage Channel?  
 
-Install docker (and optionally compose V2 plugin - not the docker-compose!) and VSCode on your sytstem. Run the docker containers as non-root users.
+>A system feature that enables one system entity to signal information to another entity by directly or indirectly writing to a storage location that is later directly or indirectly read by the second entity.
+>
+This definition is sourced from the [NIST Computer Security Resource Center](https://csrc.nist.gov/glossary/term/covert_storage_channel#:~:text=Definitions%3A,read%20by%20the%20second%20entity.). Accessed on 27.12.2024.
 
-To start sender and receiver containers:
-```
-docker compose up -d
-```
+There exists numerous covert storage channel types, we used Packet Bursting method. Other storage channel methods such as Packet Size Variation and Protocol Field Manipulation implemented by our peers can be found via the main branch of this repository.  
 
-To stop sender and receiver containers:
-```
-docker compose down
-```
+## How does Packet Bursting Work? 
 
-Note that, if you orchestrate your containers using docker compose, the containers will have hostnames ("sender" and "receiver") and DNS will be able to resolve them...
+In packet bursting, sender sends the packets in bursts to encode data. Amount of packets in bursts represent different meanings. After each burst there exists a waiting time. For instance: 
+- To represent 0 -> 5 packets can be sent.
+- To represent 1 -> 3 packets can be sent. 
 
-In one terminal, attach to the sender container
-```
-docker exec -it sender bash
-```
-In another terminal, attach to the receiver container
-```
-docker exec -it receiver bash
-```
+As a result of waiting time after each burst, receiver can detect the number of packets in each burst. 
+Determining the waiting time is crucial for this method. If the burst size is too small, the recevier might not decode the data correctly. Conversely, if it is too large performance of the covert channel will significantly decrease.
 
-and you will be in your Ubuntu 22.04 Docker instance (python3.10.12 and scapy installed). After running the Ubuntu Docker, you can type "ip addr" or "ifconfig" to see your network configuration (work on eth0).
+## ICMP 
 
-Docker extension of VSCode will be of great benefit to you.
+## Implementation 
 
-Note that if you develop code in these Docker instances and you stop the machine, your code will be lost. That is why it is recommended to use Github to store your code and clone in the machine, and push your code to Github before shutting the Docker instances down. The other option is to work in the /app folder in the sender and receiver Docker instances which are mounted to the "code" directory of your own machine.
-
-**IMPORTANT** Note that the "code" folder on your local machine are mounted to the "/app" folder (be careful it is in the root folder) in the sender and receiver Docker instances (read/write mode). You can use these folders (they are the same in fact) to develop your code. Other than the /app folder, this tool does not guarantee any persistent storage: if you exit the Docker instance, all data will be lost.
-
-You can develop your code on your local folders ("code/sender" and "code/receiver") on your own host machine, they will be immediately synchronized with the "/app" folder on containers. The volumes are created in read-write mode, so changes can be made both on the host or on the containers. You can run your code on the containers.
-
-Additionally, the local "examples" folder is mapped to the "/examples" folder in the containers. In that folder, there is a covert timing channel example including sender, receiver and base classes. In the second phase, you will implement a similar system, so it is recommended to look at the example for now.
+## Capacity
