@@ -1,6 +1,6 @@
 # Covert Storage Channel that exploits Packet Bursting using ICMP [Code: CSC-PB-ICMP]
 
-This project uses Covert Storage Channel that exploits Packet Bursting using ICMP [Code: CSC-PB-ICMP]
+This project uses Covert Storage Channel that exploits Packet Bursting using ICMP.
 
 ## What is a Covert Storage Channel?  
 
@@ -8,7 +8,7 @@ This project uses Covert Storage Channel that exploits Packet Bursting using ICM
 >
 This information is sourced from the [NIST Computer Security Resource Center](https://csrc.nist.gov/glossary/term/covert_storage_channel#:~:text=Definitions%3A,read%20by%20the%20second%20entity.). Accessed on 27.12.2024.
 
-There exists numerous covert storage channel types, we used Packet Bursting method. Other storage channel methods such as Packet Size Variation and Protocol Field Manipulation implemented by our peers can be found via the main branch of this repository.  
+There exists numerous covert storage channel types, we used Packet Bursting method. Other storage channel methods such as Packet Size Variation and Protocol Field Manipulation implemented by our peers can be found via the main branch of this forked repository.  
 
 ## How does Packet Bursting Work? 
 
@@ -35,6 +35,7 @@ ICMP (Internet Message Control Protocol) is a Network Layer protocol mainly used
 - Type 30 : Traceroute
 
 This information is sourced from the [An ICMP Reference by Daniel Miessler](https://danielmiessler.com/study/icmp). Accessed on 27.12.2024.
+
 In this project Type 8, echo request is used. 
 
 ## Implementation 
@@ -53,7 +54,17 @@ These methods are used in MyCovertChannel.py file.
 ### MyCovertChannel_performance.py
 This file is mainly the same with MyCovertChannel.py. It was implemented to calculate capacity of the covert channel. A 128 bits random message is created, and the time is measured. Results are given in [capacity](#capacity) section. 
 ### config.json
+This file configures the parameters in send and receive functions. 
+first_burst_num is used for encoding 1, second_burst_num for 0 in both functions.
+
+**IMPORTANT!!** Do NOT give values to first_burst_num and second_burst_num other than 2 and 4 without changing waiting time in init function. The wait time is decided based on 2 and 4 case. 
+
+Moreover names of the log files are also specified in this file.
 ### run.py
+This file loads the configurations from config.json and runs the code based on covert channel's code. It calls receive and send functions from MyCovertChannel.py
 ### Makefile
 
+## Constraints
+After numerous trials, we decided that sending 2 and 4 for 1 and 0 consequetively would be a wise decision in terms of network performance. The values for 0 and 1 can change, however it must be decided such that the difference between them must be at least 2. Otherwise this code will not function properly. Moreover, in general it is not a good practice to have smaller differences either. Hence, we would recommend the reader to send packets with at least 2 packet difference besides from our project. 
+**IMPORTANT!!** Do NOT give values to first_burst_num and second_burst_num other than 2 and 4 without changing waiting time in init function. The wait time is decided based on 2 and 4 case to satisfy optimum case. 
 ## Capacity
