@@ -18,13 +18,13 @@ class MyCovertChannel(CovertChannelBase):
         self.bits=[]
         self.b_num = 0
         self.start_flag = True
-        self.wait_time = 0.15
+        self.wait_time = 0.2
     
 
     def wait(self):
         time.sleep(self.wait_time )
             
-    def send(self, log_file_name, parameter1, parameter2):
+    def send(self, log_file_name, first_burst_num, second_burst_num):
         """
         - In this function, you expected to create a random message (using function/s in CovertChannelBase), and send it to the receiver container. Entire sending operations should be handled in this function.
         - After the implementation, please rewrite this comment part to explain your code basically.
@@ -37,36 +37,29 @@ class MyCovertChannel(CovertChannelBase):
         #code for performance test
         rec_IP = "172.18.0.3"
         starting_time = time.time()
-        binary_message = self.generate_random_binary_message_with_logging(log_file_name, min_length=16, max_length=16)
-
+        binary_message = self.generate_random_binary_message_with_logging(log_file_name, min_length=16 ,max_length=16)
         for i in range(len(binary_message)):
             if binary_message[i] ==  '1':
                 #send_two_packets change packet numbers give bigger to test the code, after ur sure u have no error proceed to smaller packet numbers
-                packet1 = IP(dst = rec_IP) / ICMP() 
-                packet2 = IP(dst = rec_IP) / ICMP()
-                send(packet1) 
-                send(packet2) #send kontrol et
+                for j in range(first_burst_num):
+                    packet1 = IP(dst = rec_IP) / ICMP() 
+                    super().send(packet1) 
                 self.wait()
                 
             else:
                 #send_three_packets
-                packet1 = IP(dst = rec_IP) / ICMP() 
-                packet2 = IP(dst = rec_IP) / ICMP() 
-                packet3 = IP(dst = rec_IP) / ICMP() 
-                packet4 = IP(dst = rec_IP) / ICMP()
-                send(packet1)
-                send(packet2)
-                send(packet3)
-                send(packet4)
+                for j in range(second_burst_num):
+                    packet1 = IP(dst = rec_IP) / ICMP() 
+                    super().send(packet1) 
                 self.wait()
 
         last_packet = IP(dst = rec_IP) / ICMP()
         send(last_packet)
 
-        performance = (time.time() - starting_time) / 128000
+        performance = 128/(time.time() - starting_time)
         print("Covert Channel Performance: ", performance)
         
-    def receive(self, parameter1, parameter2, parameter3, log_file_name):
+     def receive(self, first_burst_num, second_burst_num, parameter3, log_file_name):
         """
         - In this function, you are expected to receive and decode the transferred message. Because there are many types of covert channels, the receiver implementation depends on the chosen covert channel type, and you may not need to use the functions in CovertChannelBase.
         - After the implementation, please rewrite this comment part to explain your code basically.
@@ -88,18 +81,32 @@ class MyCovertChannel(CovertChannelBase):
                 #print("packet received",(time.time() - self.start_time ))
                 self.packet_count+=1
 
-            if in_time_interval:
+            if(first_burst_num<second_burst_num):
+                if in_time_interval:
                 #print("packet count", self.packet_count)
-                if self.packet_count < 3:
-                    self.bits.append(1)
-                    self.b_num+=1
-                    self.packet_count = 0
-                    self.start_flag = True
-                else:
-                    self.bits.append(0)
-                    self.b_num+=1
-                    self.packet_count = 0
-                    self.start_flag = True
+                    if self.packet_count < (first_burst_num+1):
+                        self.bits.append(1)
+                        self.b_num+=1
+                        self.packet_count = 0
+                        self.start_flag = True
+                    else:
+                        self.bits.append(0)
+                        self.b_num+=1
+                        self.packet_count = 0
+                        self.start_flag = True
+            else:
+                if in_time_interval:
+                    #print("packet count", self.packet_count)
+                    if self.packet_count < (second_burst_num+1):
+                        self.bits.append(1)
+                        self.b_num+=1
+                        self.packet_count = 0
+                        self.start_flag = True
+                    else:
+                        self.bits.append(0)
+                        self.b_num+=1
+                        self.packet_count = 0
+                        self.start_flag = True
             
             
             
@@ -128,5 +135,3 @@ class MyCovertChannel(CovertChannelBase):
         sniff(filter="icmp", prn = receivePacket, stop_filter = getFlag)  # should i put in init func???
 
               
-	      
-def calc_performance():      
