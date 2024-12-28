@@ -90,4 +90,4 @@ After numerous trials, we decided that sending 2 and 5 for 1 and 0 consequetivel
         print("Covert Channel Performance: ", performance)
 
 We found capacity as 3.25 bits/s.
-It can be seen in [Capacity Image](../docker/capacity.png)
+It can be seen in [Capacity Image](../capacity.png)
