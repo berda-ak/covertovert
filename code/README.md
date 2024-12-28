@@ -83,7 +83,7 @@ This file loads the configurations from config.json and runs the code based on c
 After numerous trials, we decided that sending 2 and 5 for 1 and 0 consequetively would be a wise decision in terms of network performance. The values for 0 and 1 can change, however it must be decided such that the difference between them must be at least 2. Otherwise this code will not function properly. Moreover, in general it is not a good practice to have smaller differences either. Hence, we would recommend the reader to send packets with at least 2 packet difference besides from our project. 
 **IMPORTANT!!** Do NOT give values to first_burst_num and second_burst_num other than 2 and 4 without changing waiting time. The wait time is decided based on 2 and 5 case to satisfy optimum case. 
 ## Capacity
-# code for performance test
+**Code for performance test**
         
         performance = 128/(time.time() - starting_time)
         
