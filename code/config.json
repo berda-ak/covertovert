@@ -4,6 +4,8 @@
     "parameters": {
       "first_burst_num": 2,
       "second_burst_num": 4,
+      "wait_time": 0.2,
+      "ip": "172.18.0.3",
       "log_file_name": "Sender.log"
     }
   },
@@ -11,7 +13,7 @@
     "parameters": {
       "first_burst_num": 2,
       "second_burst_num": 4,
-      "parameter3": "p3",
+      "wait_time": 0.2,
       "log_file_name": "Receiver.log"
     }
   }
