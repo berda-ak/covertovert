@@ -1,0 +1,260 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MyCovertChannel &mdash; Covert Channel 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Covert Channel
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html">Covert Channel</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Covert Channel</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Module code</a></li>
+      <li class="breadcrumb-item active">MyCovertChannel</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for MyCovertChannel</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">CovertChannelBase</span> <span class="kn">import</span> <span class="n">CovertChannelBase</span>
+<span class="kn">from</span> <span class="nn">scapy.all</span> <span class="kn">import</span> <span class="n">sniff</span><span class="p">,</span><span class="n">IP</span><span class="p">,</span><span class="n">ICMP</span><span class="p">,</span><span class="n">send</span>
+<span class="kn">import</span> <span class="nn">time</span>
+
+<div class="viewcode-block" id="MyCovertChannel">
+<a class="viewcode-back" href="../MyCovertChannel.html#MyCovertChannel.MyCovertChannel">[docs]</a>
+<span class="k">class</span> <span class="nc">MyCovertChannel</span><span class="p">(</span><span class="n">CovertChannelBase</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    - You are not allowed to change the file name and class name.</span>
+<span class="sd">    - You can edit the class in any way you want (e.g. adding helper functions); however, there must be a &quot;send&quot; and a &quot;receive&quot; function, the covert channel will be triggered by calling these functions.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        - You can edit __init__.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">message</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">flag</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">packet_count</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bits</span><span class="o">=</span><span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">b_num</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">start_flag</span> <span class="o">=</span> <span class="kc">True</span>
+       
+    
+
+<div class="viewcode-block" id="MyCovertChannel.wait">
+<a class="viewcode-back" href="../MyCovertChannel.html#MyCovertChannel.MyCovertChannel.wait">[docs]</a>
+    <span class="k">def</span> <span class="nf">wait</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">wait_time</span> <span class="p">)</span></div>
+
+            
+<div class="viewcode-block" id="MyCovertChannel.send">
+<a class="viewcode-back" href="../MyCovertChannel.html#MyCovertChannel.MyCovertChannel.send">[docs]</a>
+    <span class="k">def</span> <span class="nf">send</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">log_file_name</span><span class="p">,</span> <span class="n">first_burst_num</span><span class="p">,</span> <span class="n">second_burst_num</span><span class="p">,</span><span class="n">wait_time</span><span class="p">,</span><span class="n">ip</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This function sends a random message generated by generate_random_binary_message_with_logging and encrypts </span>
+<span class="sd">        it by using packet bursting method. Packets in bursts are ICMP packets, number of packets are determined</span>
+<span class="sd">        in config.json file for 0 and 1 as optimum values. They are sent by using scapy&#39;s send function.</span>
+
+<span class="sd">        Constraints: Parameters must be determined such that the difference between number of packet for 0 and 1 </span>
+<span class="sd">        are at least 2. Moreover first_burst_num, second_burst_num, wait time must be the same for receive and send functions.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># 1 is 2 packets, </span>
+        <span class="c1"># 0 is 4 packets</span>
+        <span class="n">rec_IP</span> <span class="o">=</span> <span class="n">ip</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">wait_time</span> <span class="o">=</span> <span class="n">wait_time</span>
+        <span class="n">starting_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+
+        <span class="c1"># for 16 char message performance set to min_length=16 ,max_length=16</span>
+        <span class="n">binary_message</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_random_binary_message_with_logging</span><span class="p">(</span><span class="n">log_file_name</span><span class="p">,</span> <span class="n">min_length</span><span class="o">=</span><span class="mi">50</span> <span class="p">,</span><span class="n">max_length</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">binary_message</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="n">binary_message</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span>  <span class="s1">&#39;1&#39;</span><span class="p">:</span>
+                <span class="c1">#send_two_packets change packet numbers give bigger to test the code, after you are sure you have no error proceed to smaller packet numbers</span>
+                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">first_burst_num</span><span class="p">):</span>
+                    <span class="n">packet1</span> <span class="o">=</span> <span class="n">IP</span><span class="p">(</span><span class="n">dst</span> <span class="o">=</span> <span class="n">rec_IP</span><span class="p">)</span> <span class="o">/</span> <span class="n">ICMP</span><span class="p">()</span> 
+                    <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">packet1</span><span class="p">)</span> 
+                <span class="bp">self</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
+                
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1">#send_three_packets</span>
+                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">second_burst_num</span><span class="p">):</span>
+                    <span class="n">packet1</span> <span class="o">=</span> <span class="n">IP</span><span class="p">(</span><span class="n">dst</span> <span class="o">=</span> <span class="n">rec_IP</span><span class="p">)</span> <span class="o">/</span> <span class="n">ICMP</span><span class="p">()</span> 
+                    <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">packet1</span><span class="p">)</span> 
+                <span class="bp">self</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
+
+        <span class="n">last_packet</span> <span class="o">=</span> <span class="n">IP</span><span class="p">(</span><span class="n">dst</span> <span class="o">=</span> <span class="n">rec_IP</span><span class="p">)</span> <span class="o">/</span> <span class="n">ICMP</span><span class="p">()</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">last_packet</span><span class="p">)</span>
+
+        <span class="c1">#code for performance test</span>
+        <span class="n">performance</span> <span class="o">=</span> <span class="mi">128</span><span class="o">/</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">starting_time</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Covert Channel Performance: &quot;</span><span class="p">,</span> <span class="n">performance</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MyCovertChannel.receive">
+<a class="viewcode-back" href="../MyCovertChannel.html#MyCovertChannel.MyCovertChannel.receive">[docs]</a>
+    <span class="k">def</span> <span class="nf">receive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">first_burst_num</span><span class="p">,</span> <span class="n">second_burst_num</span><span class="p">,</span> <span class="n">log_file_name</span><span class="p">,</span><span class="n">wait_time</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Receives and decodes the message sent by the send function in packet bursts.</span>
+<span class="sd">         It counts the number of packets in a time interval and decides the bit value.</span>
+<span class="sd">          After each 8 bits it, decides the corresponding character. After receiving &#39;.&#39;</span>
+<span class="sd">          converts to corresponding string value and logs to file given by Receiver.log</span>
+
+<span class="sd">        Constraints: Parameters must be determined such that the difference between number of packet for 0 and 1 </span>
+<span class="sd">        are at least 2. Moreover first_burst_num, second_burst_num, wait time must be the same for receive and send functions.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">wait_time</span> <span class="o">=</span> <span class="n">wait_time</span>
+        <span class="k">def</span> <span class="nf">receivePacket</span><span class="p">(</span><span class="n">packet</span><span class="p">):</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">start_flag</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">start_flag</span> <span class="o">=</span> <span class="kc">False</span>
+
+            
+
+            <span class="n">in_time_interval</span> <span class="o">=</span> <span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">start_time</span> <span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">wait_time</span> 
+
+            
+            <span class="k">if</span> <span class="n">packet</span> <span class="ow">and</span> <span class="n">packet</span><span class="o">.</span><span class="n">haslayer</span><span class="p">(</span><span class="n">ICMP</span><span class="p">)</span> <span class="ow">and</span> <span class="n">packet</span><span class="p">[</span><span class="n">ICMP</span><span class="p">]</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="mi">8</span><span class="p">:</span> 
+                <span class="bp">self</span><span class="o">.</span><span class="n">packet_count</span><span class="o">+=</span><span class="mi">1</span>
+
+            <span class="k">if</span><span class="p">(</span><span class="n">first_burst_num</span><span class="o">&lt;</span><span class="n">second_burst_num</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">in_time_interval</span><span class="p">:</span>
+                <span class="c1">#print(&quot;packet count&quot;, self.packet_count)</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">packet_count</span> <span class="o">&lt;</span> <span class="p">(</span><span class="n">first_burst_num</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">bits</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">b_num</span><span class="o">+=</span><span class="mi">1</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">packet_count</span> <span class="o">=</span> <span class="mi">0</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">start_flag</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">bits</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">b_num</span><span class="o">+=</span><span class="mi">1</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">packet_count</span> <span class="o">=</span> <span class="mi">0</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">start_flag</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">in_time_interval</span><span class="p">:</span>
+                    <span class="c1">#print(&quot;packet count&quot;, self.packet_count)</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">packet_count</span> <span class="o">&lt;</span> <span class="p">(</span><span class="n">second_burst_num</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">bits</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">b_num</span><span class="o">+=</span><span class="mi">1</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">packet_count</span> <span class="o">=</span> <span class="mi">0</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">start_flag</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">bits</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">b_num</span><span class="o">+=</span><span class="mi">1</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">packet_count</span> <span class="o">=</span> <span class="mi">0</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">start_flag</span> <span class="o">=</span> <span class="kc">True</span>
+            
+            
+            
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">b_num</span> <span class="o">==</span> <span class="mi">8</span><span class="p">:</span>
+                <span class="c1">#print(&quot;bits :&quot;, &#39;&#39;.join(map(str, self.bits)))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">message</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">convert_eight_bits_to_character</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bits</span><span class="p">)))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">b_num</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">bits</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="c1">#print(self.message)</span>
+
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">message</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;.&#39;</span><span class="p">:</span> 
+                    <span class="c1">#print(&quot;message&quot;, self.message) </span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">log_message</span><span class="p">(</span><span class="n">message</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">message</span><span class="p">,</span> <span class="n">log_file_name</span><span class="o">=</span><span class="n">log_file_name</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">flag</span> <span class="o">=</span> <span class="kc">True</span> 
+
+
+        
+    
+        <span class="k">def</span> <span class="nf">getFlag</span><span class="p">(</span><span class="n">packet</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">flag</span>
+
+        
+
+        <span class="n">sniff</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="s2">&quot;icmp&quot;</span><span class="p">,</span> <span class="n">prn</span> <span class="o">=</span> <span class="n">receivePacket</span><span class="p">,</span> <span class="n">stop_filter</span> <span class="o">=</span> <span class="n">getFlag</span><span class="p">)</span>  <span class="c1"># should i put in init func???</span></div>
+</div>
+
+
+              
+	      
+        
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, METU - Computer Engineering Department.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
